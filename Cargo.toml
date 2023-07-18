@@ -8,6 +8,7 @@ authors = ["lonmstalker"]
 log = "0.4.19"
 env_logger = "0.10.0"
 
+envy = "0.4.2"
 tokio = "1.29.1"
 teloxide = "0.12.2"
 

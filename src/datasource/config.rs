@@ -1,10 +1,44 @@
-use deadpool_postgres::ManagerConfig;
+use std::io::ErrorKind;
+use deadpool_postgres::{ManagerConfig, Pool, Runtime};
 use deadpool_postgres::RecyclingMethod::Fast;
+use tokio_postgres::NoTls;
+use crate::datasource::migrations::run_migrations;
 
 pub(crate) type Error = std::io::Error;
 
-async fn validate() {
-    
+pub async fn create_pool(with_migrations: bool) -> Result<Pool, Error> {
+    let props = envy::from_env::<PostgresProperties>()
+        .map_err(|e| Error::new(ErrorKind::InvalidInput, e.to_string()))?;
+
+    let pool = props
+        .to_config()
+        .create_pool(Some(Runtime::Tokio1), NoTls)
+        .map_err(|e| Error::new(ErrorKind::InvalidInput, e.to_string()));
+
+    if with_migrations {
+        run_migrations(&props);
+    }
+
+    if let Ok(ref pl) = pool {
+        validate(pl);
+    }
+
+    pool
+}
+
+async fn validate(pool: &Pool) -> Result<(), Error> {
+    pool.get()
+        .await
+        .map_err(|e| Error::new(ErrorKind::NotConnected, e.to_string()))
+        ?.query("SELECT 1", &[])
+        .await
+        .map_err(|e| Error::new(ErrorKind::NotConnected, e.to_string()))
+        ?.get(0)
+        .map(|res| {
+            let rs: i32 = res.get(0);
+            assert_eq!(1, rs, "incorrect response of db");
+        })
+        .ok_or(Error::new(ErrorKind::InvalidInput, "can't connect to db"))
 }
 
 #[derive(Deserialize, Debug)]
