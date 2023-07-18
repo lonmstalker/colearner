@@ -8,7 +8,7 @@ mod embedded {
     embed_migrations!("resources/migrations");
 }
 
-pub async fn run_migrations(props: &PostgresProperties) -> Result<(), std::io::Error> {
+pub async fn run_migrations(props: &PostgresProperties) -> Result<(), Error> {
     info!("migrations started");
 
     let cfg = "host=".to_owned() + &*props.db_host.clone()

@@ -1,6 +1,7 @@
 use std::io::ErrorKind;
 use deadpool_postgres::{ManagerConfig, Pool, Runtime};
 use deadpool_postgres::RecyclingMethod::Fast;
+use serde::Deserialize;
 use tokio_postgres::NoTls;
 use crate::datasource::migrations::run_migrations;
 
@@ -10,19 +11,20 @@ pub async fn create_pool(with_migrations: bool) -> Result<Pool, Error> {
     let props = envy::from_env::<PostgresProperties>()
         .map_err(|e| Error::new(ErrorKind::InvalidInput, e.to_string()))?;
 
+    if with_migrations {
+        run_migrations(&props);
+    }
+
     let pool = props
         .to_config()
         .create_pool(Some(Runtime::Tokio1), NoTls)
         .map_err(|e| Error::new(ErrorKind::InvalidInput, e.to_string()));
 
-    if with_migrations {
-        run_migrations(&props);
-    }
-
     if let Ok(ref pl) = pool {
         validate(pl);
     }
 
+    log::info!("pool created");
     pool
 }
 
