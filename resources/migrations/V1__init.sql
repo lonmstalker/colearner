@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS user_info
 (
     id               VARCHAR(255) PRIMARY KEY,
-    username         VARCHAR(255)                             NOT NULL,
+    username         VARCHAR(255) UNIQUE                      NOT NULL,
     current_position VARCHAR(100)             DEFAULT 'START' NOT NULL,
     age              INTEGER                                  NULL,
     experience_years INTEGER                                  NOT NULL,
@@ -26,9 +26,13 @@ CREATE TABLE IF NOT EXISTS proposed_project
 (
     id           SERIAL PRIMARY KEY,
     author_id    VARCHAR(255) REFERENCES user_info      NOT NULL,
-    title        VARCHAR(255)                           NOT NULL,
+    title        VARCHAR(255) UNIQUE                    NOT NULL,
     description  VARCHAR(500)                           NOT NULL,
     data         JSONB                                  NOT NULL,
     status       INT                                    NOT NULL,
+    type         INT                                    NOT NULL,
     created_date TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
-)
+);
+
+CREATE INDEX user_info_data_gin_idx ON user_info USING gin (data);
+CREATE INDEX proposed_project_data_gin_idx ON proposed_project USING gin (data);
