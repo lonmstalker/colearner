@@ -13,6 +13,7 @@ chrono = "0.4.26"
 teloxide = { version = "0.12.2", features = ["macros"]}
 tokio = { version = "1.29.1", features = ["rt-multi-thread", "macros"] }
 
+bytes = "1.4.0"
 serde = { version = "1.0.171", features = ["derive"] }
 derive_more = { version = "0.99.17", features = ["error"] }
 uuid = { version = "1.4.0", features = ["v4", "fast-rng", "macro-diagnostics", "serde"] }

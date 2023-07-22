@@ -1,6 +1,7 @@
+use std::sync::Arc;
 use teloxide::Bot;
 use teloxide::prelude::Message;
-use teloxide::types::Me;
+use crate::app::app::AppState;
 use crate::datasource::config::{create_pool, Error};
 
 pub async fn run() -> Result<(), Box<Error>> {
@@ -9,9 +10,11 @@ pub async fn run() -> Result<(), Box<Error>> {
 
     let bot = Bot::from_env();
     let pool = create_pool(true).await?;
+
+    let state = Arc::new(AppState { pool });
     Ok(())
 }
 
-async fn message_handler(bot: &Bot, message: Message, me: Me) {
+async fn message_handler(bot: &Bot, message: Message, state: AppState) {
     message.via_bot.unwrap().
 }
